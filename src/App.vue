@@ -14,8 +14,10 @@
       :center="center"
       :options="mapOptions"
       style="height: 80%"
+      ref="map"
       @update:center="centerUpdate"
       @update:zoom="zoomUpdate"
+      @ready="ready"
     >
       <l-tile-layer v-bind="tileLayer" />
       <l-tile-layer v-bind="tileLayer2" />
@@ -50,11 +52,134 @@
 <script>
 import { latLng } from "leaflet";
 import { LMap, LTileLayer, LMarker, LPopup, LTooltip } from "vue2-leaflet";
-import * as Test from "leaflet";
-
-console.log(Test);
+import { request } from "esri-leaflet";
+import {
+  geosearch,
+  geocodeServiceProvider,
+  Geocode,
+  GeocodeService,
+  Suggest,
+} from "esri-leaflet-geocoder";
 
 const apiKey = "584b2fa686f14ba283874318b3b8d6b0";
+
+Geocode.prototype.params.key = apiKey;
+Suggest.prototype.params.key = apiKey;
+
+GeocodeService.prototype.metadata = function(callback, context) {
+  return request(
+    this.options.url,
+    {
+      key: apiKey,
+    },
+    callback,
+    context
+  );
+};
+
+var geocodeAddress = geocodeServiceProvider({
+  url: "/ags/gc/loc/address",
+  label: "Address Point",
+  maxResults: 15,
+});
+
+var geocodeBuilding = geocodeServiceProvider({
+  url: "/ags/gc/ib1000/buildings/building",
+  label: "Building",
+  maxResults: 15,
+});
+var geocodeBuildingLic = geocodeServiceProvider({
+  url: "/ags/gc/ic1000/buildinglicence",
+  label: "Building Licence",
+  maxResults: 15,
+});
+var geocodeGeocomm = geocodeServiceProvider({
+  url: "/ags/gc/loc/geocomm",
+  label: "Geo Community",
+  maxResults: 15,
+});
+var geocodePlacePoint = geocodeServiceProvider({
+  url: "/ags/gc/ib5000/poi/placepoint",
+  label: "Place",
+  maxResults: 15,
+});
+var geocodePoiPoint = geocodeServiceProvider({
+  url: "/ags/gc/ib5000/poi/poipoint",
+  label: "POI",
+  maxResults: 15,
+});
+
+var geocodeSite = geocodeServiceProvider({
+  url: "/ags/gc/ib1000/buildings/site",
+  label: "Site",
+  maxResults: 15,
+});
+
+var geocodeSubSite = geocodeServiceProvider({
+  url: "/ags/gc/ib1000/buildings/subsite",
+  label: "SubSite",
+  maxResults: 15,
+});
+
+var geocodeLot = geocodeServiceProvider({
+  url: "/ags/gc/ic1000/lot",
+  label: "LOT",
+  maxResults: 15,
+});
+
+var geocodeTenancyPoly = geocodeServiceProvider({
+  url: "/ags/gc//ic1000/tenancypoly",
+  label: "LOT",
+  maxResults: 15,
+});
+
+var geocodeGLA = geocodeServiceProvider({
+  url: "/ags/gc/ic1000/gla",
+  label: "GLA",
+  maxResults: 15,
+});
+
+var geocodeVGS = geocodeServiceProvider({
+  url: "/ags/gc/ls/vacantgovsite",
+  label: "VGS",
+  maxResults: 15,
+});
+
+var geocodeStInt = geocodeServiceProvider({
+  url: "/ags/gc/loc/streetintersection",
+  label: "Streets Intersection",
+  maxResults: 15,
+});
+
+var geocodeStreets = geocodeServiceProvider({
+  url: "/ags/gc/ib1000/transportation/streetcentrelines",
+  label: "Streets",
+  maxResults: 15,
+});
+
+var geocodeLocalControl = geocodeServiceProvider({
+  url: "/ags/gc/sc/localcontrol",
+  label: "Local Control",
+  maxResults: 15,
+});
+
+var geocodeHControl = geocodeServiceProvider({
+  url: "/ags/gc/sc/GeodeticHControl",
+  label: "GeodeticHControl",
+  maxResults: 15,
+});
+
+var geocodeVControl = geocodeServiceProvider({
+  url: "/ags/gc/sc/GeodeticVControl",
+  label: "GeodeticVControl",
+  maxResults: 15,
+});
+
+var geocodeUtility = geocodeServiceProvider({
+  url: "/ags/gc/ib1000/utilities/utilitypoint",
+  label: "Utility Point",
+  maxResults: 50,
+});
 
 export default {
   name: "Example",
@@ -89,14 +214,6 @@ export default {
       },
       currentZoom: 11.5,
       currentCenter: latLng(22.29227, 114.20847),
-
-      // url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-      // attribution:
-      //   '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
-      // withPopup: latLng(47.41322, -1.219482),
-      // withTooltip: latLng(47.41422, -1.250482),
-      // showParagraph: false,
-      // showMap: true,
     };
   },
   methods: {
@@ -111,6 +228,32 @@ export default {
     },
     innerClick() {
       alert("Click!");
+    },
+    ready() {
+      const map = this.$refs.map.mapObject;
+      const searchControl = geosearch({
+        collapseAfterResult: false,
+        allowMultipleResults: true,
+        providers: [
+          geocodeAddress,
+          geocodeBuilding,
+          geocodeBuildingLic,
+          geocodeGeocomm,
+          geocodePlacePoint,
+          geocodePoiPoint,
+          geocodeSite,
+          geocodeSubSite,
+          geocodeStInt,
+          geocodeStreets,
+          geocodeLot,
+          geocodeTenancyPoly,
+          geocodeGLA,
+          geocodeVGS,
+          geocodeUtility,
+        ],
+        useMapBounds: false,
+        zoomToResult: true,
+      }).addTo(map);
     },
   },
 };

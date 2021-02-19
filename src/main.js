@@ -3,6 +3,7 @@ import App from "./App.vue";
 import router from "./router";
 import { LMap, LTileLayer, LMarker } from "vue2-leaflet";
 import "leaflet/dist/leaflet.css";
+import "esri-leaflet-geocoder/dist/esri-leaflet-geocoder.css";
 import { Icon } from "leaflet";
 
 Vue.config.productionTip = false;
